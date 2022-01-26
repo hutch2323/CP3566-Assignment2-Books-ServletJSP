@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DBConnection {
+    static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
     static private String DB_URL = "jdbc:mariadb://localhost:3300/books";
     static private String USER = "root";
     static private String PASS = "password";
@@ -12,10 +13,11 @@ public class DBConnection {
     public static Connection initDatabase(){
         // Open a connection
         try{
+            Class.forName(JDBC_DRIVER);
             Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
             return conn;
         }
-        catch (SQLException e) {
+        catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
             System.err.println("Error connecting with database. Closing application");
             System.exit(1);

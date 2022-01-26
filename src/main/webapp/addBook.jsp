@@ -8,22 +8,31 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>Add Author</title>
+    <title>Add Book</title>
 </head>
 <body>
-    <h3>Add Author</h3>
+    <h3>Add Book</h3>
     <br/>
     <form method="post" action="LibraryData">
-        <input type="hidden" name="type" value="author">
+        <input type="hidden" name="type" value="book">
 <%--        <select id="program" name="program" size="1">--%>
 <%--            <option>ASD</option>--%>
 <%--            <option>Software Development</option>--%>
 <%--            <option>CSN</option>--%>
 <%--        </select>--%>
-            <label for="firstName">First Name:</label>
+            <label for="isbn">ISBN:</label>
+            <input type="text" name="isbn" id="isbn"/><br/>
+            <label for="title">Title:</label>
+            <input type="text" name="title" id="title"/><br/>
+            <label for="edition">Edition Number:</label>
+            <input type="text" name="edition" id="edition"/><br/>
+            <label for="copyright">Copyright:</label>
+            <input type="text" name="copyright" id="copyright"/><br/>
+            <label for="firstName">Author First Name:</label>
             <input type="text" name="firstName" id="firstName"/><br/>
-            <label for="lastName">Last Name:</label>
+            <label for="lastName">Author Last Name:</label>
             <input type="text" name="lastName" id="lastName"/>
+
         <br/>
         <br/>
         <input type="submit">
