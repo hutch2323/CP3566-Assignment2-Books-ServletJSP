@@ -8,9 +8,9 @@
 <h1><%= "Hello World!" %>
 </h1>
 <br/>
-<%--<a href="">Add Book</a><br/>--%>
+<a href="addBook.jsp">Add Book</a><br/>
 <a href="addAuthor.jsp">Add Author</a><br/>
 <a href="LibraryData?type=books">View Books</a><br/>
-<a href="LibraryData">View Authors</a>
+<a href="LibraryData?type=authors">View Authors</a>
 </body>
 </html>

@@ -11,20 +11,24 @@
     <title>Add Author</title>
 </head>
 <body>
-Login Name: <input type="text" id="login" name="login">
-<br/>
-<br/>
-Select your program:
-<select id="program" name="program" size="1">
-    <option>ASD</option>
-    <option>Software Development</option>
-    <option>CSN</option>
-</select>
-<br/>
-<br/>
-<input type="submit">
-<br/>
-<a href="index.jsp">Back</a>
-
+    <h3>Add Author</h3>
+    <br/>
+    <form method="post" action="LibraryData">
+        <input type="hidden" name="type" value="author">
+<%--        <select id="program" name="program" size="1">--%>
+<%--            <option>ASD</option>--%>
+<%--            <option>Software Development</option>--%>
+<%--            <option>CSN</option>--%>
+<%--        </select>--%>
+            <label for="firstName">First Name:</label>
+            <input type="text" name="firstName" id="firstName"/><br/>
+            <label for="lastName">Last Name:</label>
+            <input type="text" name="lastName" id="lastName"/>
+        <br/>
+        <br/>
+        <input type="submit">
+        <a href="index.jsp">Back</a>
+    </form>
+    <br/>
 </body>
 </html>
