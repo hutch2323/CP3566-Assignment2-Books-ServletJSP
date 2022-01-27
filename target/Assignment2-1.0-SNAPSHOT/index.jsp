@@ -7,6 +7,31 @@
     <title>Library Data</title>
 </head>
 <body>
+<%
+    if (request.getAttribute("type") != null){
+        if (request.getAttribute("type").equals("book")){ %>
+            <div id="alert" class="alert alert-success d-flex align-items-center m-auto" role="alert">
+                <div class="text-center m-auto">
+                    ${title} by ${firstName} ${lastName} has been added to the database
+<%--                        <button id="closeBtn" class="btn btn-primary bg-success text-white" type="button" onClick="javascript:hideAlert()">Close</button>--%>
+                </div>
+            </div>
+       <% } else if (request.getAttribute("type").equals("author")){ %>
+            <div id="alert" class="alert alert-success d-flex align-items-center m-auto" role="alert">
+                <div class="text-center m-auto">
+                    ${firstName} ${lastName} has been added to the database
+<%--                        <button id="closeBtn" class="btn btn-primary bg-success text-white" type="button" onClick="javascript:hideAlert()">Close</button>--%>
+                </div>
+            </div>
+        <%}
+    }
+%>
+
+<%--<script type="text/javascript">--%>
+<%--   const hideAlert = () => {--%>
+<%--       document.getElementById("alert").style.display = "none";--%>
+<%--   };--%>
+<%--</script>--%>
 
 <div id="heading" class="mt-4 p-4 bg-dark w-50 text-white m-auto">
     <h1 style="text-align:center">Welcome to LibraryData</h1>
