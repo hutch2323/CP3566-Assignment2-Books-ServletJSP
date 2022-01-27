@@ -21,142 +21,18 @@ public class LibraryData extends HttpServlet {
         String requestType = request.getParameter("type");
         request.getRequestDispatcher("/header.jsp").include(request, response);
         out.println("<html><head>\n" +
-                "    <title>Add Author</title>\n" +
+                "    <title>View " + requestType.substring(0, 1).toUpperCase() + requestType.substring(1) + "</title>\n" +
                 "</head><body class='w-75 m-auto d-block'>");
         out.println("<div class='mt-4 p-4 bg-dark w-75 text-white m-auto'>" +
                 "<h1 style='text-align:center'>" + requestType.substring(0, 1).toUpperCase() + requestType.substring(1) + "</h1>" +
                 "</div>");
 
-//        try{
-//            Connection conn = DBConnection.initDatabase();
-//        } catch (Exception e){S
-//
-//        }
-        Connection conn = null;
-        Statement stmt = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = DBConnection.initDatabase();
-            stmt = conn.createStatement();
-
+        try{
             if (requestType.equals("books")){
-                String querySQL = "Select * from titles";
-                List<Book> bookList = new ArrayList<>();
-                try {
-
-                    ResultSet rs = stmt.executeQuery(querySQL);
-
-                    while (rs.next()) {
-                        Book book = new Book(rs.getString("isbn"), rs.getString("title"),
-                                rs.getInt("editionNumber"), rs.getString("copyright"));
-
-                        String sql = "Select a.authorID, a.firstName, a.lastName " +
-                                "from authors a join authorisbn ai " +
-                                "ON a.authorID = ai.authorID " +
-                                "JOIN titles t " +
-                                "ON ai.isbn = t.isbn " +
-                                "where t.isbn = ?";
-
-                        pstmt = conn.prepareStatement(sql);
-                        pstmt.setString(1, book.getIsbn());
-                        ResultSet rsAuthors = pstmt.executeQuery();
-
-                        while (rsAuthors.next()) {
-                            Author author = new Author(rsAuthors.getInt("authorID"),
-                                    rsAuthors.getString("firstName"), rsAuthors.getString("lastName"));
-                            book.getAuthorList().add(author);
-                        }
-                        bookList.add(book);
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-
-                out.println("<table class='" + "table table-striped w-75 mt-2 m-auto" + "'><tr><th>ISBN</th><th>Title</th><th>Edition</th><th>Copyright</th><th>Authors</th></tr>");
-                for(Book book : bookList){
-                    int count = 0;
-                    String authorString = "";
-                    for (Author author : book.getAuthorList()) {
-                        if (book.getAuthorList().size() == 1){
-                            authorString += author.getFirstName() + " " + author.getLastName();
-                        } else if ((count + 1) == book.getAuthorList().size()) {
-                            authorString += "and " + author.getFirstName() + " " + author.getLastName();
-                        } else if (book.getAuthorList().size() == 2) {
-                            authorString += author.getFirstName() + " " + author.getLastName() + " ";
-                        } else {
-                            authorString += author.getFirstName() + " " + author.getLastName() + ", ";
-                        }
-                        count++;
-                    }
-
-                    out.println("<tr><td>" + book.getIsbn() + "</td><td>" + book.getTitle() + "</td><td>"
-                            + book.getEditionNumber() + "</td><td>" + book.getCopyright() + "</td><td>"
-                            + authorString + "</td></tr>");
-                }
-
-
-
-            }  else if (requestType.equals("authors")) {
-                String querySQL = "Select * from authors";
-                List<Author> authorList = new ArrayList<>();
-                try {
-                    ResultSet rs = stmt.executeQuery(querySQL);
-
-                    while (rs.next()) {
-                        Author author = new Author(rs.getInt("authorID"), rs.getString("firstName"),
-                                rs.getString("lastName"));
-
-                        String sql = "Select t.isbn, t.title, t.editionNumber, t.copyright " +
-                                "from titles t join authorisbn ai " +
-                                "ON t.isbn = ai.isbn " +
-                                "JOIN authors a " +
-                                "ON ai.authorID = a.authorID " +
-                                "where a.authorID = ?";
-
-                        pstmt = conn.prepareStatement(sql);
-                        pstmt.setInt(1, author.getAuthorID());
-                        ResultSet rsBooks = pstmt.executeQuery();
-
-                        while (rsBooks.next()) {
-                            Book book = new Book(rsBooks.getString("isbn"), rsBooks.getString("title"),
-                                    rsBooks.getInt("editionNumber"), rsBooks.getString("copyright"));
-                            author.getBookList().add(book);
-                        }
-                        authorList.add(author);
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-
-                out.println("<table class='" + "table table-striped w-75 mt-2 m-auto" + "'><tr><th>Author ID</th><th>First Name</th><th>Last Name</th><th>Books</th></tr>");
-                for(Author author : authorList){
-                    int count = 0;
-                    String bookString = "";
-                    for (Book book : author.getBookList()) {
-                        if (author.getBookList().size() == 1){
-                            bookString += book.getTitle();
-                        }else if ((count + 1) == author.getBookList().size()) {
-                            bookString += "and " + book.getTitle();
-                        } else if (book.getAuthorList().size() == 2) {
-                            bookString += book.getTitle() + " ";
-                        } else {
-                            bookString += book.getTitle() + ", ";
-                        }
-                        count++;
-                    }
-
-                    out.println("<tr><td>" + author.getAuthorID() + "</td><td>" + author.getFirstName() + "</td><td>"
-                            + author.getLastName() + "</td><td>" + bookString + "</td></tr>");
-                }
+                out.println(generateBookDisplay(getBooks()));
+            } else if (requestType.equals("authors")) {
+                out.println(generateAuthorDisplay(getAuthors()));
             }
-            conn.close();
-            stmt.close();
-            pstmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -179,8 +55,12 @@ public class LibraryData extends HttpServlet {
 
             insertAuthor(firstName, lastName);
 
-            out.println("<p>" + firstName + " " + lastName + " was successfully added to the database.</p>");
-            out.println("</br><a href=\"index.jsp\">Continue</a>");
+            request.setAttribute("type", "author");
+            request.setAttribute("firstName", firstName);
+            request.setAttribute("lastName", lastName);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/index.jsp");
+            dispatcher.forward(request, response);
+
         } else if (type.equals("book")){
             String isbn = request.getParameter("isbn");
             String title = request.getParameter("title");
@@ -193,14 +73,134 @@ public class LibraryData extends HttpServlet {
             String lastName = request.getParameter("lastName");
 
             insertAuthor(firstName, lastName);
-
             insertAuthorISBN(getAuthorID(firstName, lastName), isbn);
 
-            out.println("<p>" + title + " by " + firstName + " " + lastName
-                    + " was successfully added to the database.</p>");
-            out.println("</br><a href=\"index.jsp\">Continue</a>");
+            request.setAttribute("type", "book");
+            request.setAttribute("title", title);
+            request.setAttribute("firstName", firstName);
+            request.setAttribute("lastName", lastName);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/index.jsp");
+            dispatcher.forward(request, response);
         }
-        out.println("</body></html>");
+    }
+
+    public String generateBookDisplay(List<Book> bookList){
+        String html = "<table class='" + "table table-striped w-75 mt-2 m-auto" + "'><tr><th>ISBN</th><th>Title</th><th>Edition</th><th>Copyright</th><th>Authors</th></tr>";
+        for(Book book : bookList){
+            int count = 0;
+            String authorString = "";
+            for (Author author : book.getAuthorList()) {
+                if (book.getAuthorList().size() == 1){
+                    authorString += author.getFirstName() + " " + author.getLastName();
+                } else if ((count + 1) == book.getAuthorList().size()) {
+                    authorString += "and " + author.getFirstName() + " " + author.getLastName();
+                } else if (book.getAuthorList().size() == 2) {
+                    authorString += author.getFirstName() + " " + author.getLastName() + " ";
+                } else {
+                    authorString += author.getFirstName() + " " + author.getLastName() + ", ";
+                }
+                count++;
+            }
+
+            html += "<tr><td>" + book.getIsbn() + "</td><td>" + book.getTitle() + "</td><td>"
+                    + book.getEditionNumber() + "</td><td>" + book.getCopyright() + "</td><td>"
+                    + authorString + "</td></tr>";
+        }
+        return html;
+    }
+
+    public String generateAuthorDisplay(List<Author> authorList){
+        String html = "<table class='" + "table table-striped w-75 mt-2 m-auto" + "'><tr><th>Author ID</th><th>First Name</th><th>Last Name</th><th>Books</th></tr>";
+        for(Author author : authorList){
+            int count = 0;
+            String bookString = "";
+            for (Book book : author.getBookList()) {
+                if (author.getBookList().size() == 1){
+                    bookString += book.getTitle();
+                }else if ((count + 1) == author.getBookList().size()) {
+                    bookString += "and " + book.getTitle();
+                } else if (book.getAuthorList().size() == 2) {
+                    bookString += book.getTitle() + " ";
+                } else {
+                    bookString += book.getTitle() + ", ";
+                }
+                count++;
+            }
+
+            html += "<tr><td>" + author.getAuthorID() + "</td><td>" + author.getFirstName() + "</td><td>"
+                    + author.getLastName() + "</td><td>" + bookString + "</td></tr>";
+        }
+        return html;
+    }
+    public List<Book> getBooks() throws SQLException {
+        List<Book> bookList = new ArrayList<>();
+        String querySQL = "Select * from titles";
+
+        String sql = "Select a.authorID, a.firstName, a.lastName " +
+                "from authors a join authorisbn ai " +
+                "ON a.authorID = ai.authorID " +
+                "JOIN titles t " +
+                "ON ai.isbn = t.isbn " +
+                "where t.isbn = ?";
+
+        try (Connection conn = DBConnection.initDatabase();
+            Statement stmt = conn.createStatement();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            ResultSet rs = stmt.executeQuery(querySQL);
+
+            while (rs.next()) {
+                Book book = new Book(rs.getString("isbn"), rs.getString("title"),
+                        rs.getInt("editionNumber"), rs.getString("copyright"));
+
+                pstmt.setString(1, book.getIsbn());
+                ResultSet rsAuthors = pstmt.executeQuery();
+
+                while (rsAuthors.next()) {
+                    Author author = new Author(rsAuthors.getInt("authorID"),
+                            rsAuthors.getString("firstName"), rsAuthors.getString("lastName"));
+                    book.getAuthorList().add(author);
+                }
+                bookList.add(book);
+            }
+        }
+
+        return bookList;
+    }
+
+    public List<Author> getAuthors() throws SQLException {
+        List<Author> authorList = new ArrayList<>();
+        String querySQL = "Select * from authors";
+
+        String sql = "Select t.isbn, t.title, t.editionNumber, t.copyright " +
+                "from titles t join authorisbn ai " +
+                "ON t.isbn = ai.isbn " +
+                "JOIN authors a " +
+                "ON ai.authorID = a.authorID " +
+                "where a.authorID = ?";
+
+        try (Connection conn = DBConnection.initDatabase();
+             Statement stmt = conn.createStatement();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            ResultSet rs = stmt.executeQuery(querySQL);
+
+            while (rs.next()) {
+                Author author = new Author(rs.getInt("authorID"), rs.getString("firstName"),
+                        rs.getString("lastName"));
+
+                pstmt.setInt(1, author.getAuthorID());
+                ResultSet rsBooks = pstmt.executeQuery();
+
+                while (rsBooks.next()) {
+                    Book book = new Book(rsBooks.getString("isbn"), rsBooks.getString("title"),
+                            rsBooks.getInt("editionNumber"), rsBooks.getString("copyright"));
+                    author.getBookList().add(book);
+                }
+                authorList.add(author);
+            }
+        }
+        return authorList;
     }
 
     public int getAuthorID(String firstName, String lastName){

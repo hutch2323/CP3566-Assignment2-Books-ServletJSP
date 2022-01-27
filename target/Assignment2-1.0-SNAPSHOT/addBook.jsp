@@ -47,6 +47,7 @@
         </div>
         <div class="m-auto text-center">
             <input type="submit" class="btn btn-primary">
+            <a href="index.jsp" class="btn btn-primary">Cancel</a>
         </div>
     </form>
 </body>
