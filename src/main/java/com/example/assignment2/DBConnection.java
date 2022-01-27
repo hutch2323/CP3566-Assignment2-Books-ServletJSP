@@ -10,14 +10,13 @@ public class DBConnection {
     static private String USER = "root";
     static private String PASS = "password";
 
-    public static Connection initDatabase(){
+    public static Connection initDatabase() {
         // Open a connection
-        try{
+        try {
             Class.forName(JDBC_DRIVER);
             Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
             return conn;
-        }
-        catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
             System.err.println("Error connecting with database. Closing application");
             System.exit(1);
