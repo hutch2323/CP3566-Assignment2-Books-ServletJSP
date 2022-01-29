@@ -9,23 +9,44 @@
 <body>
 <%
     if (request.getAttribute("type") != null){
-        if (request.getAttribute("type").equals("book")){ %>
-            <div id="alert" class="alert alert-success d-flex align-items-center m-auto" role="alert">
-                <div class="text-center m-auto">
-                    ${title} by ${firstName} ${lastName} has been added to the database
-<%--                        <button id="closeBtn" class="btn btn-primary bg-success text-white" type="button" onClick="javascript:hideAlert()">Close</button>--%>
+        if (request.getAttribute("error-type") != null){
+            if (request.getAttribute("error-type").equals("book")){
+                 %>
+                <div id="alert" class="alert alert-danger d-flex align-items-center m-auto" role="alert">
+                    <div class="text-center m-auto">
+                        ${title} by ${firstName} ${lastName} could not be added. Error: ISBN associated with ${title} already exists in database
+                        <%--                        <button id="closeBtn" class="btn btn-primary bg-success text-white" type="button" onClick="javascript:hideAlert()">Close</button>--%>
+                    </div>
                 </div>
-            </div>
-       <% } else if (request.getAttribute("type").equals("author")){ %>
-            <div id="alert" class="alert alert-success d-flex align-items-center m-auto" role="alert">
-                <div class="text-center m-auto">
-                    ${firstName} ${lastName} has been added to the database
-<%--                        <button id="closeBtn" class="btn btn-primary bg-success text-white" type="button" onClick="javascript:hideAlert()">Close</button>--%>
+            <%} else if (request.getAttribute("error-type").equals("author")){ %>
+                <div id="alert" class="alert alert-danger d-flex align-items-center m-auto" role="alert">
+                    <div class="text-center m-auto">
+                        ${firstName} ${lastName} could not be added. Error: Author by name ${firstName} ${lastName} already exists in database
+                        <%--                        <button id="closeBtn" class="btn btn-primary bg-success text-white" type="button" onClick="javascript:hideAlert()">Close</button>--%>
+                    </div>
                 </div>
-            </div>
-        <%}
+            <% }
+      } else {
+            if (request.getAttribute("type").equals("book")){ %>
+                <div id="alert" class="alert alert-success d-flex align-items-center m-auto" role="alert">
+                    <div class="text-center m-auto">
+                        ${title} by ${firstName} ${lastName} has been added to the database
+    <%--                        <button id="closeBtn" class="btn btn-primary bg-success text-white" type="button" onClick="javascript:hideAlert()">Close</button>--%>
+                    </div>
+                </div>
+           <% } else if (request.getAttribute("type").equals("author")){ %>
+                <div id="alert" class="alert alert-success d-flex align-items-center m-auto" role="alert">
+                    <div class="text-center m-auto">
+                        ${firstName} ${lastName} has been added to the database
+    <%--                        <button id="closeBtn" class="btn btn-primary bg-success text-white" type="button" onClick="javascript:hideAlert()">Close</button>--%>
+                    </div>
+                </div>
+            <%}
+        }
     }
-%>
+    %>
+
+
 
 <%--<script type="text/javascript">--%>
 <%--   const hideAlert = () => {--%>

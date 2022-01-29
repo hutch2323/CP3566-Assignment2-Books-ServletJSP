@@ -52,8 +52,17 @@ public class LibraryData extends HttpServlet {
         if (type.equals("author")){
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");
+            Author author = new Author(0, firstName, lastName);
 
-            insertAuthor(firstName, lastName);
+            try {
+                if (checkForDuplicateAuthor(author)){
+                    request.setAttribute("error-type", "author");
+                } else {
+                    insertAuthor(firstName, lastName);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
             request.setAttribute("type", "author");
             request.setAttribute("firstName", firstName);
@@ -66,14 +75,26 @@ public class LibraryData extends HttpServlet {
             String title = request.getParameter("title");
             int edition = Integer.parseInt(request.getParameter("edition"));
             String copyright = request.getParameter("copyright");
-
-            insertBook(isbn, title, edition, copyright);
-
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");
 
-            insertAuthor(firstName, lastName);
-            insertAuthorISBN(getAuthorID(firstName, lastName), isbn);
+            Book book = new Book(isbn, title, edition, copyright);
+            Author author = new Author(0, firstName, lastName);
+            try {
+                if (checkForDuplicateBook(book)){
+                    request.setAttribute("error-type", "book");
+                } else if (checkForDuplicateAuthor(author)) {
+                    // if author exists, upload book and AuthorISBN, but author not added again
+                    insertBook(isbn, title, edition, copyright);
+                    insertAuthorISBN(getAuthorID(firstName, lastName), isbn);
+                } else {
+                    insertBook(isbn, title, edition, copyright);
+                    insertAuthor(firstName, lastName);
+                    insertAuthorISBN(getAuthorID(firstName, lastName), isbn);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
             request.setAttribute("type", "book");
             request.setAttribute("title", title);
@@ -81,6 +102,43 @@ public class LibraryData extends HttpServlet {
             request.setAttribute("lastName", lastName);
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/index.jsp");
             dispatcher.forward(request, response);
+        }
+    }
+
+    public boolean checkForDuplicateBook(Book book) throws SQLException {
+        String querySQL = "Select * from titles " +
+                "where isbn = ?";
+
+        try (Connection conn = DBConnection.initDatabase();
+             PreparedStatement pstmt = conn.prepareStatement(querySQL)) {
+
+            pstmt.setString(1, book.getIsbn());
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next() == false) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    public boolean checkForDuplicateAuthor(Author author) throws SQLException {
+        String querySQL = "Select * from authors " +
+                "where firstName = ? and lastName = ?";
+
+        try (Connection conn = DBConnection.initDatabase();
+             PreparedStatement pstmt = conn.prepareStatement(querySQL)) {
+
+            pstmt.setString(1, author.getFirstName());
+            pstmt.setString(2, author.getLastName());
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next() == false) {
+                return false;
+            } else {
+                return true;
+            }
         }
     }
 
